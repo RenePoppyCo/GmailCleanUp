@@ -20,7 +20,7 @@ def main():
     creds = None
 
     if os.path.exists('token.json'):
-        credits = Credentials.from_authorized_user_file('token.json', SCOPES)
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
     if not creds or not creds.valid: 
         if creds and creds.expired and creds.refresh_token:
@@ -39,7 +39,7 @@ def main():
 
         # get promotinal emails
         query = 'category:promotions'
-        results = service_gmail.users().messages().list(userId='me', q=query, maxResults=5).execute()
+        results = service_gmail.users().messages().list(userId='me', q=query, maxResults=5).execute() # to test w/ 5, sppend maxResults=5 to list()
         messages = results.get('messages', [])            
 
         if not messages:
@@ -51,13 +51,18 @@ def main():
         for message in messages:
             email_id = message['id']
             email_detail = service_gmail.users().messages().get(userId='me', id=email_id, format='full').execute()
-            
+
             headers = email_detail['payload']['headers']
             subject = next(header['value'] for header in headers if header['name'] == 'Subject')
             print(f'Subject: {subject}')
+        
+        # delete promo emails
+        for message in messages:
+            service_gmail.users().messages().trash(userId='me', id=message['id']).execute()
+
 
     except HttpError as error:
-        print(f'An error occurred: {error}')
+        print(f'An error occurred: {error}')        
 
 if __name__ == '__main__':
     main()

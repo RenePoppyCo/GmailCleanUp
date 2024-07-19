@@ -39,7 +39,7 @@ def main():
 
         # get promotinal emails
         query = 'category:promotions'
-        results = service_gmail.users().messages().list(userId='me', q=query, maxResults=5).execute() # to test w/ 5, sppend maxResults=5 to list()
+        results = service_gmail.users().messages().list(userId='me', q=query).execute() # to test w/ 5, sppend maxResults=5 to list()
         messages = results.get('messages', [])            
 
         if not messages:
@@ -58,7 +58,7 @@ def main():
         
         # delete promo emails
         for message in messages:
-            service_gmail.users().messages().trash(userId='me', id=message['id']).execute()
+            service_gmail.users().messages().delete(userId='me', id=message['id']).execute()
 
 
     except HttpError as error:

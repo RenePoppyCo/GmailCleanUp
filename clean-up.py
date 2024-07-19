@@ -1,4 +1,8 @@
-"""Delete promotional emails from your Gmail account."""
+""" 
+Delete promotional emails from your Gmail account. 
+WARNING: PERMANETLY deletes emails under the promotions catagory!
+Ensure there are no important emails that ended up under promotions
+"""
 import os, configparser, json
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -15,8 +19,7 @@ API_NAME = 'gmail'
 API_VERSION = 'v1'
 SCOPES = ['https://mail.google.com/']
 
-def main():
-        
+def main():    
     creds = None
 
     if os.path.exists('token.json'):
@@ -33,6 +36,14 @@ def main():
 
     # connect to api service
     try:    
+        ans = False
+        while not ans:
+            viewEmails = input("Would you like to see each email being deleted? (yes/no):").strip().lower()
+            if viewEmails in ['yes', 'no']:
+                ans = True
+            else:
+                print("Invalid input. Please enter 'yes' or 'no'.")    
+
         service_gmail = build('gmail', 'v1', credentials=creds)
         #print(dir(service_gmail))
         print("Successfully authenticated and obtained credentials.")
@@ -48,18 +59,24 @@ def main():
 
         print(f'Found {len(messages)} promotional emails. Deleting...')    
 
-        for message in messages:
-            email_id = message['id']
-            email_detail = service_gmail.users().messages().get(userId='me', id=email_id, format='full').execute()
+        # prints the emails being deleted if you'd like to see
+        if viewEmails == 'yes':
+            count = 0
+            for message in messages:
+                email_id = message['id']
+                email_detail = service_gmail.users().messages().get(userId='me', id=email_id, format='full').execute()
 
-            headers = email_detail['payload']['headers']
-            subject = next(header['value'] for header in headers if header['name'] == 'Subject')
-            print(f'Subject: {subject}')
-        
-        # delete promo emails
-        for message in messages:
-            service_gmail.users().messages().delete(userId='me', id=message['id']).execute()
-
+                headers = email_detail['payload']['headers']
+                subject = next(header['value'] for header in headers if header['name'] == 'Subject')
+                count += 1
+                # delete the email
+                service_gmail.users().messages().delete(userId='me', id=message['id']).execute()
+                print(f'{count} Subject: {subject}')
+        else:
+            # delete promo emails
+            for message in messages:
+                service_gmail.users().messages().delete(userId='me', id=message['id']).execute()        
+        print('Successfully deleted promo emails!')
 
     except HttpError as error:
         print(f'An error occurred: {error}')        

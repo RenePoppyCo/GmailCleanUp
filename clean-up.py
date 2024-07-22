@@ -50,7 +50,7 @@ def main():
 
         # get promotinal emails
         query = 'category:promotions'
-        results = service_gmail.users().messages().list(userId='me', q=query).execute() # to test w/ 5, sppend maxResults=5 to list()
+        results = service_gmail.users().messages().list(userId='me', q=query,maxResults=150).execute() # to test w/ 5, sppend maxResults=5 to list()
         messages = results.get('messages', [])            
 
         if not messages:
@@ -59,7 +59,7 @@ def main():
 
         print(f'Found {len(messages)} promotional emails. Deleting...')    
 
-        # prints the emails being deleted if you'd like to see
+        # prints the emails being deleted if user wants to see
         if viewEmails == 'yes':
             count = 0
             for message in messages:
